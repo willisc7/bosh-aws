@@ -17,11 +17,3 @@ resource "aws_subnet" "public" {
         Name = "public-subnet-${var.tag_name}"
     }
 }
-
-resource "aws_eip" "bosh_eip" {
-    vpc = "true"
-    
-    tags = {
-        Name = "bosh-eip-${var.tag_name}"
-    }
-}

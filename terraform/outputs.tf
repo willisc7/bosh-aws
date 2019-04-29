@@ -9,3 +9,7 @@ output "public_subnet_az" {
 output "public_subnet_region" {
     value = "${var.aws_region}"
 }
+
+output "jumpbox_eip" {
+  value = "${aws_instance.jumpbox.public_ip}"
+}
