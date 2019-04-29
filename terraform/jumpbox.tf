@@ -1,5 +1,9 @@
 resource "aws_internet_gateway" "public_igw" {
   vpc_id = "${aws_vpc.bosh.id}"
+
+  tags = {
+    Name = "public-igw-${var.tag_name}"
+  }
 }
 
 resource "aws_route_table" "public_route_table" {

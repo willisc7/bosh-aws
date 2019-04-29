@@ -1,6 +1,8 @@
 aws_profile = "devstar"
 aws_region = "us-gov-west-1"
 bosh_vpc_cidr = "10.0.0.0/16"
+bosh_vpc_gw = "10.0.0.1"
+bosh_internal_ip = "10.0.0.6"
 public_subnet_cidr = "10.0.0.0/24"
 bosh_availability_zone = "us-gov-west-1a"
 tag_name = "cwillis"
