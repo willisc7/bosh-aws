@@ -57,11 +57,20 @@ resource "aws_security_group" "jumpbox_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags {
+    Name = "jumpbox-${var.tag_name}"
+  }
 }
 
 resource "aws_key_pair" "jumpbox_key" {
   key_name   = "jumpbox_key"
   public_key = "${file("~/.ssh/jumpbox_key.pub")}"
+}
+
+resource "aws_key_pair" "bosh_key" {
+  key_name   = "bosh_key"
+  public_key = "${file("~/.ssh/bosh_key.pub")}"
 }
 
 resource "aws_instance" "jumpbox" {

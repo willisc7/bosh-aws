@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# WIP: create bosh security group that allows communication from jumpbox
+
 set -e
 
 ROOT_DIR=$(pwd)
@@ -12,10 +15,20 @@ if [[ -f "~/.ssh/jumpbox_key" ]]; then
     chmod 600 ~/.ssh/jumpbox_key ~/.ssh/jumpbox_key.pub
 fi
 
+if [[ -f "~/.ssh/bosh_key" ]]; then
+    ssh-keygen -N "" -t rsa -b 4096 -f ~/.ssh/bosh_key
+    chmod 600 ~/.ssh/bosh_key ~/.ssh/bosh_key.pub
+fi
+
 set_vars() {
   cd ${ROOT_DIR}/terraform
   JSON=$(terraform output -json)
   cd ${ROOT_DIR}
+  
+  echo "Enter AWS Access Key ID: "
+  read AWS_ACCESS_KEY_ID
+  echo "Enter AWS Secret Access Key: "
+  read AWS_SECRET_ACCESS_KEY
 
   JUMPBOX_EIP=$(echo $JSON | jq -r '.jumpbox_eip.value')
   WORKSPACE_NAME=$(echo $JSON | jq -r '.tag_name.value')
@@ -31,8 +44,6 @@ deploy_bosh(){
     ssh -tt -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@${JUMPBOX_EIP} -i ~/.ssh/jumpbox_key bash << EOF
         set -e
 
-        aws configure
-
         bosh create-env ${ROOT_DIR}/bosh-deployment/bosh.yml \
         --state=state.json \
         --vars-store=creds.yml \
@@ -41,11 +52,13 @@ deploy_bosh(){
         -v internal_cidr=${BOSH_VPC_CIDR} \
         -v internal_gw=${BOSH_VPC_GW} \
         -v internal_ip=${BOSH_INTERNAL_IP} \
+        -v access_key_id=${AWS_ACCESS_KEY_ID} \
+        -v secret_access_key=${AWS_SECRET_ACCESS_KEY} \
         -v region=${AWS_REGION} \
         -v az=${BOSH_AVAILABILITY_ZONE} \
-        -v default_key_name=bosh \
+        -v default_key_name=bosh_key \
         -v default_security_groups=[bosh] \
-        --var-file private_key=~/Downloads/bosh.pem \
+        --var-file private_key=~/.ssh/bosh_key \
         -v subnet_id=${PUBLIC_SUBNET_ID}
 EOF
 }
@@ -55,5 +68,4 @@ terraform init
 terraform apply
 cd ${ROOT_DIR}
 set_vars
-# WIP: figure out how to read AWS access key into SSH session with jumpbox
 #deploy_bosh
